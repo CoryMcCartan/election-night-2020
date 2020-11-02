@@ -1,5 +1,7 @@
 # Live Election-night Projections
 
+[Run your own conditional forecasts on election night &raquo;](https://corymccartan.github.io/2020/11/election-night)
+
 This repository contains a series of tools and visualizations for election night.
 
 * `R/election_night.R`: main election night script. Run to produce regular projections.
