@@ -38,6 +38,8 @@ state_ev = set_names(usa$ev, usa$abbr)
 state_names = set_names(usa$state, usa$abbr)
 cli_alert_success("Loaded state EV data.")
 
+returns = tibble()
+
 
 #######################################
 # FORECAST LOOP
@@ -64,10 +66,10 @@ run_forecast = function(pull=F, samples=2000) {
         set_names(focus_states)
     cli_alert_success("Models fit successfully.")
 
-    list(
+    preds = list(
         draws = proj_draws,
         mine = filter_is(draws$mine, proj_draws),
-        economist = filter_is(draws$mine, proj_draws)
+        economist = filter_is(draws$economist, proj_draws)
     )
 }
 

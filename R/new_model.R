@@ -67,9 +67,7 @@ get_fit_data = function(county_d, returns, st, yr=2020) {
 get_pred_data = function(county_d, returns, st, yr=2020) {
     full_d = filter(returns, rep/precincts >= 0.99)
     filter(county_d, year==yr, abbr==st) %>%
-        anti_join(full_d, by="fips") %>%
-        mutate(lg_dem = qlogis(dem / twop)) %>%
-        drop_na(any_of(as.character(attr(terms(model_formula), "variables"))))
+        anti_join(full_d, by="fips")
 }
 
 # get posterior draws from conjugate linear model, using importance sampling to

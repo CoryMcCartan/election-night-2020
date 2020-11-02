@@ -46,9 +46,9 @@ filter_is = function(model_draws, proj_draws) {
     N = nrow(model_m)
 
     st = names(proj_draws)
-    log_source = dmvnorm(model_m[,st], model_loc[st], model_cov[st, st], log=T)
+    log_source = dmvnorm(model_m[,st,drop=F], model_loc[st], model_cov[st, st], log=T)
     log_tgt = imap(proj_draws, function(x, s) {
-        if (is.na(x)) return(rep(0, N))
+        if (is.na(x[1])) return(rep(0, N))
         dx = density(x, adjust=1.5)
         coalesce(approxfun(dx$x, log(dx$y))(model_m[,s]), 0)
     }) %>%
