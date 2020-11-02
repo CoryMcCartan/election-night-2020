@@ -1,0 +1,54 @@
+@import url('https://fonts.googleapis.com/css2?family=Overpass:wght@300;700&family=Playfair+Display:wght@400;800&display=swap');
+
+body {
+    color: #000;
+    font-family: Overpass, Arial, sans-serif;
+    font-weight: 300;
+    font-size: 11pt;
+    background: #f4f4f4;
+}
+
+.author, .date {
+    font-weight: normal;
+}
+
+.date {
+    font-family: Overpass, Arial, sans-serif;
+    color: #aaa;
+    text-transform: uppercase;
+    font-size: 10pt;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: #222;
+    font-family: "Playfair Display", Baskerville, serif
+}
+h1.title {
+    font-size: 2.5em;
+    padding: .4em .4em .5em 0;
+    display: inline-block;
+    background-color: #808fbb;
+    position: relative;
+    left: -100%;
+    padding-left: 100%;
+    white-space: nowrap;
+}
+h1:not(.title) {
+    border-bottom: 3px solid #808fbb;
+}
+
+.banner {
+    padding: 1.35em 100% 1.1em 100%;
+    font-size: 2em;
+    line-height: 1.25;
+    background: #ddd;
+    margin-bottom: 1em;
+    position: relative;
+    width: 300%;
+    left: -100%;
+    z-index: -1;
+}
+
+.nav-tabs li.active a {
+    background: #f4f4f4 !important;
+}

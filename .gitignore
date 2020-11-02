@@ -1,0 +1,10 @@
+.Rproj.user/
+.Rhistory
+*.bak
+*.tmp
+*.swp
+*.rdata
+.DS_Store
+rsconnect/
+data/pulled/
+summary/summary_files/

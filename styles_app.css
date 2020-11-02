@@ -1,0 +1,143 @@
+@import url('https://fonts.googleapis.com/css2?family=Overpass:wght@300;700&family=Playfair+Display:wght@400;800&display=swap');
+
+body {
+    color: #000;
+    font-family: Overpass, Arial, sans-serif;
+    font-weight: 300;
+    font-size: 11pt;
+    background: #f4f4f4;
+}
+
+.author, .title {
+    display: none !important;
+}
+
+.date {
+    font-weight: normal;
+    font-family: Overpass, Arial, sans-serif;
+    color: #aaa;
+    text-transform: uppercase;
+    font-size: 10pt;
+    margin-bottom: 3.5em;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: #222;
+    font-family: "Playfair Display", Baskerville, serif
+}
+h1 {
+    border-bottom: 3px solid #808fbb;
+}
+
+.banner {
+    padding: 1.35em 100% 1.1em 100%;
+    font-size: 2em;
+    line-height: 1.25;
+    background: #ddd;
+    margin-bottom: 1em;
+    position: relative;
+    width: 300%;
+    left: -100%;
+    z-index: -1;
+}
+
+
+.r2d3.html-widget {
+    height: auto !important;
+}
+
+#map {
+    max-width: 760px;
+    margin: -0.5em 0 2em;
+    position: relative;
+    background: transparent !important;
+}
+#map .states > path {
+    pointer-events: all;
+}
+#map .tooltip {
+    top: unset;
+    width: 180px;
+    padding: 0.75em;
+    font-weight: normal;
+    line-height: 1.1;
+    z-index: 20;
+    opacity: 1;
+    font-family: Overpass;
+    position: absolute;
+    background: #ffffffd4;
+    border-radius: 2px;
+    font-size: .85em;
+    padding: .5em;
+    backdrop-filter: blur(2px);
+}
+#map .tooltip h3 {
+    font-family: Overpass;
+    margin: 0;
+    padding: 0;
+    font-size: 1.2em;
+}
+#map .labels > text {
+    pointer-events: none;
+}
+
+.nav-tabs li.active a {
+    background: #f4f4f4 !important;
+}
+
+.shiny-bound-output {
+    opacity: 1 !important;
+}
+
+.shiny-plot-output img {
+    height: auto;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    image-rendering: -webkit-optimize-contrast;
+}
+
+div.state_sliders > div > div.shiny-input-container {
+    flex-basis: 15em;
+    padding: 0 4px;
+}
+
+div.state_sliders > div.shiny-html-output {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.state_sliders.gop .irs-bar {
+    border-top: 1px solid #ee6655 !important;
+    border-bottom: 1px solid #ee6655 !important;
+    background: #ee6655 !important;
+}
+.state_sliders.toss .irs-bar {
+    border-top: 1px solid #777777 !important;
+    border-bottom: 1px solid #777777 !important;
+    background: #777777 !important;
+}
+.state_sliders.dem .irs-bar {
+    border-top: 1px solid #5566ee !important;
+    border-bottom: 1px solid #5566ee !important;
+    background: #5566ee !important;
+}
+
+.state_sliders.gop .irs-to, .state_sliders.gop .irs-from, .state_sliders.gop .irs-single  {
+    background: #ee6655 !important;
+}
+.state_sliders.toss .irs-to, .state_sliders.toss .irs-from, .state_sliders.toss .irs-single  {
+    background: #777777 !important;
+}
+.state_sliders.dem .irs-to, .state_sliders.dem .irs-from, .state_sliders.dem .irs-single  {
+    background: #5566ee !important;
+}
+
+.irs-slider {
+    box-shadow: none !important;
+    top: 19px !important;
+    width: 20px !important;
+    height: 20px !important;
+}
+.irs-line {
+    background: #eaeaea !important
+}

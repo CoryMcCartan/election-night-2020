@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Cory McCartan" />
+
+
+<title>Presidential Election-night Forecasts</title>
+
+<script src="summary_files/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="summary_files/bootstrap-3.3.5/css/readable.min.css" rel="stylesheet" />
+<script src="summary_files/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="summary_files/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="summary_files/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="summary_files/navigation-1.1/tabsets.js"></script>
+<link href="summary_files/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="summary_files/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+<link rel="stylesheet" href="styles.css" type="text/css" />
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Presidential Election-night Forecasts</h1>
+<h4 class="author">Cory McCartan</h4>
+<h4 class="date">November 3, 2020, 06:00 PM EDT</h4>
+
+</div>
+
+
+<div id="national-overview" class="section level2">
+<h2>National Overview</h2>
+<p><img src="summary_files/figure-html/unnamed-chunk-2-1.png" width="864" /></p>
+<div class="banner">
+<p><b style="color: #56e">Joe Biden</b> has won <b>204</b> electoral votes, to <b style="color: #e65">Donald Trump</b>’s <b>157</b> votes. <br /> <b style="color: #56e">Biden</b> has a <b>3 in 100</b> chance of winning the election.</p>
+</div>
+<p><img src="summary_files/figure-html/unnamed-chunk-4-1.png" width="864" /></p>
+</div>
+<div id="key-states" class="section level1">
+<h1>Key States</h1>
+<p>The remaining uncalled states:</p>
+<table class="table table-condensed">
+<thead>
+<tr>
+<th style="text-align:right;">
+State
+</th>
+<th style="text-align:right;">
+Estimated Biden vote
+</th>
+<th style="text-align:right;">
+Chance Biden wins
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+Virginia
+</td>
+<td style="text-align:right;">
+<span style="display: inline-block; direction: rtl; border-radius: 4px; padding-right: 2px; background-color: gray; width: 60.00%">52.13%</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(85, 102, 238, 0.8)">100%</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+New Hampshire
+</td>
+<td style="text-align:right;">
+<span style="display: inline-block; direction: rtl; border-radius: 4px; padding-right: 2px; background-color: gray; width: 59.75%">51.98%</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(123, 102, 199, 0.8)">75%</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Nevada
+</td>
+<td style="text-align:right;">
+<span style="display: inline-block; direction: rtl; border-radius: 4px; padding-right: 2px; background-color: gray; width: 55.74%">49.63%</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(144, 102, 178, 0.8)">61%</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+New Mexico
+</td>
+<td style="text-align:right;">
+<span style="display: inline-block; direction: rtl; border-radius: 4px; padding-right: 2px; background-color: gray; width: 55.89%">49.72%</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(172, 102, 150, 0.8)">43%</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Maine
+</td>
+<td style="text-align:right;">
+<span style="display: inline-block; direction: rtl; border-radius: 4px; padding-right: 2px; background-color: gray; width: 55.99%">49.78%</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(187, 102, 135, 0.8)">33%</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Florida
+</td>
+<td style="text-align:right;">
+<span style="display: inline-block; direction: rtl; border-radius: 4px; padding-right: 2px; background-color: gray; width: 54.44%">48.87%</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(223, 102, 99, 0.8)">9%</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+North Carolina
+</td>
+<td style="text-align:right;">
+<span style="display: inline-block; direction: rtl; border-radius: 4px; padding-right: 2px; background-color: gray; width: 55.18%">49.31%</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(224, 102, 98, 0.8)">9%</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Georgia
+</td>
+<td style="text-align:right;">
+<span style="display: inline-block; direction: rtl; border-radius: 4px; padding-right: 2px; background-color: gray; width: 54.59%">48.96%</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(225, 102, 97, 0.8)">8%</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Arizona
+</td>
+<td style="text-align:right;">
+<span style="display: inline-block; direction: rtl; border-radius: 4px; padding-right: 2px; background-color: gray; width: 51.89%">47.38%</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(231, 102, 91, 0.8)">4%</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Minnesota
+</td>
+<td style="text-align:right;">
+<span style="display: inline-block; direction: rtl; border-radius: 4px; padding-right: 2px; background-color: gray; width: 53.21%">48.15%</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(237, 102, 85, 0.8)">1%</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Pennsylvania
+</td>
+<td style="text-align:right;">
+<span style="display: inline-block; direction: rtl; border-radius: 4px; padding-right: 2px; background-color: gray; width: 53.07%">48.07%</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(237, 102, 85, 0.8)">0%</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Texas
+</td>
+<td style="text-align:right;">
+<span style="display: inline-block; direction: rtl; border-radius: 4px; padding-right: 2px; background-color: gray; width: 52.88%">47.96%</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(237, 102, 85, 0.8)">0%</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Michigan
+</td>
+<td style="text-align:right;">
+<span style="display: inline-block; direction: rtl; border-radius: 4px; padding-right: 2px; background-color: gray; width: 51.76%">47.30%</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(237, 102, 85, 0.8)">0%</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Kansas
+</td>
+<td style="text-align:right;">
+<span style="display: inline-block; direction: rtl; border-radius: 4px; padding-right: 2px; background-color: gray; width: 48.23%">45.23%</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(237, 102, 85, 0.8)">0%</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Iowa
+</td>
+<td style="text-align:right;">
+<span style="display: inline-block; direction: rtl; border-radius: 4px; padding-right: 2px; background-color: gray; width: 45.74%">43.77%</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(238, 102, 85, 0.8)">0%</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Indiana
+</td>
+<td style="text-align:right;">
+<span style="display: inline-block; direction: rtl; border-radius: 4px; padding-right: 2px; background-color: gray; width: 40.00%">40.41%</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(238, 102, 85, 0.8)">0%</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Louisiana
+</td>
+<td style="text-align:right;">
+<span style="display: inline-block; direction: rtl; border-radius: 4px; padding-right: 2px; background-color: gray; width: 45.77%">43.79%</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(238, 102, 85, 0.8)">0%</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Missouri
+</td>
+<td style="text-align:right;">
+<span style="display: inline-block; direction: rtl; border-radius: 4px; padding-right: 2px; background-color: gray; width: 43.68%">42.57%</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(238, 102, 85, 0.8)">0%</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Montana
+</td>
+<td style="text-align:right;">
+<span style="display: inline-block; direction: rtl; border-radius: 4px; padding-right: 2px; background-color: gray; width: 41.33%">41.19%</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(238, 102, 85, 0.8)">0%</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Nebraska
+</td>
+<td style="text-align:right;">
+<span style="display: inline-block; direction: rtl; border-radius: 4px; padding-right: 2px; background-color: gray; width: 42.79%">42.05%</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(238, 102, 85, 0.8)">0%</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Ohio
+</td>
+<td style="text-align:right;">
+<span style="display: inline-block; direction: rtl; border-radius: 4px; padding-right: 2px; background-color: gray; width: 47.49%">44.80%</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(238, 102, 85, 0.8)">0%</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+South Carolina
+</td>
+<td style="text-align:right;">
+<span style="display: inline-block; direction: rtl; border-radius: 4px; padding-right: 2px; background-color: gray; width: 48.41%">45.34%</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(238, 102, 85, 0.8)">0%</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Wisconsin
+</td>
+<td style="text-align:right;">
+<span style="display: inline-block; direction: rtl; border-radius: 4px; padding-right: 2px; background-color: gray; width: 49.16%">45.78%</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(238, 102, 85, 0.8)">0%</span>
+</td>
+</tr>
+</tbody>
+</table>
+<p>The closest state:</p>
+<p><img src="summary_files/figure-html/unnamed-chunk-6-1.png" width="768" /></p>
+</div>
+<div id="scenarios" class="section level1 tabset">
+<h1>Scenarios</h1>
+<div id="main-forecast" class="section level2">
+<h2>Main Forecast</h2>
+<p><img src="summary_files/figure-html/unnamed-chunk-8-1.png" width="864" /></p>
+<p>Based on the states that have been called, the main forecast estimates that <b style="color: #56e">Biden</b> has a <b>55 in 100</b> chance of winning the election.</p>
+<p>This table shows Biden’s chances of winning the election if he or Trump wins specific remaining states.</p>
+<table class="table table-condensed">
+<thead>
+<tr>
+<th style="text-align:right;">
+State
+</th>
+<th style="text-align:right;">
+EVs
+</th>
+<th style="text-align:right;">
+If Trump wins
+</th>
+<th style="text-align:right;">
+If Biden wins
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+Florida
+</td>
+<td style="text-align:right;">
+29
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(254, 249, 248, 0.04)">23.60%</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(85, 102, 238, 1)">90.12%</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Michigan
+</td>
+<td style="text-align:right;">
+16
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(255, 255, 255, 0)">22.37%</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(127, 140, 242, 0.75)">81.91%</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Arizona
+</td>
+<td style="text-align:right;">
+11
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(245, 173, 164, 0.53)">39.82%</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(106, 121, 240, 0.87)">85.96%</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Pennsylvania
+</td>
+<td style="text-align:right;">
+20
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(249, 208, 203, 0.3)">32.31%</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(191, 198, 248, 0.37)">69.52%</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+North Carolina
+</td>
+<td style="text-align:right;">
+15
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(245, 172, 163, 0.54)">40.00%</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(152, 162, 244, 0.6)">77.14%</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Georgia
+</td>
+<td style="text-align:right;">
+16
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(241, 136, 123, 0.77)">47.76%</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(120, 133, 241, 0.79)">83.33%</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Minnesota
+</td>
+<td style="text-align:right;">
+10
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(249, 207, 201, 0.31)">32.61%</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(221, 225, 251, 0.19)">63.71%</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+New Mexico
+</td>
+<td style="text-align:right;">
+5
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(249, 208, 203, 0.3)">32.35%</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(235, 237, 253, 0.11)">61.03%</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Nevada
+</td>
+<td style="text-align:right;">
+6
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(243, 149, 137, 0.69)">44.93%</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(228, 231, 252, 0.15)">62.38%</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Alaska
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(238, 102, 85, 1)">55.09%</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px"> NA</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Maine
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px"> NA</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(251, 251, 254, 0.02)">58.06%</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+New Hampshire
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px"> NA</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(255, 255, 255, 0)">57.32%</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Texas
+</td>
+<td style="text-align:right;">
+38
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(241, 130, 116, 0.81)">48.98%</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px"> NA</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="economist-forecast" class="section level2">
+<h2><em>Economist</em> Forecast</h2>
+<p><img src="summary_files/figure-html/unnamed-chunk-10-1.png" width="864" /></p>
+<p>Based on the states that have been called, the <em>Economist</em> forecasts that <b style="color: #56e">Biden</b> has a <b>42 in 100</b> chance of winning the election.</p>
+<p>This table shows Biden’s chances of winning the election if he or Trump wins specific remaining states.</p>
+<table class="table table-condensed">
+<thead>
+<tr>
+<th style="text-align:right;">
+State
+</th>
+<th style="text-align:right;">
+EVs
+</th>
+<th style="text-align:right;">
+If Trump wins
+</th>
+<th style="text-align:right;">
+If Biden wins
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+Florida
+</td>
+<td style="text-align:right;">
+29
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(250, 217, 213, 0.24)">19.50%</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(103, 118, 239, 0.89)">82.31%</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Texas
+</td>
+<td style="text-align:right;">
+38
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(243, 148, 136, 0.69)">32.73%</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(85, 102, 238, 1)">87.10%</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Pennsylvania
+</td>
+<td style="text-align:right;">
+20
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(249, 203, 198, 0.33)">22.16%</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(125, 138, 242, 0.76)">76.49%</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Arizona
+</td>
+<td style="text-align:right;">
+11
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(246, 177, 169, 0.5)">27.17%</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(132, 145, 242, 0.72)">74.37%</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Michigan
+</td>
+<td style="text-align:right;">
+16
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(249, 209, 204, 0.29)">21.09%</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(161, 171, 245, 0.55)">66.76%</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+North Carolina
+</td>
+<td style="text-align:right;">
+15
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(241, 133, 120, 0.79)">35.56%</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(121, 135, 241, 0.78)">77.29%</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Georgia
+</td>
+<td style="text-align:right;">
+16
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(242, 141, 129, 0.74)">34.05%</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(141, 153, 243, 0.66)">72.06%</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Nevada
+</td>
+<td style="text-align:right;">
+6
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(252, 230, 228, 0.16)">16.99%</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(218, 221, 251, 0.22)">51.78%</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Maine
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(255, 255, 255, 0)">12.34%</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(250, 250, 254, 0.03)">43.26%</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Minnesota
+</td>
+<td style="text-align:right;">
+10
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(248, 192, 185, 0.4)">24.27%</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(223, 226, 251, 0.18)">50.46%</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+New Hampshire
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(246, 180, 172, 0.48)">26.59%</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(221, 224, 251, 0.2)">51.00%</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+Alaska
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(238, 102, 85, 1)">41.69%</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px"> NA</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+New Mexico
+</td>
+<td style="text-align:right;">
+5
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px"> NA</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: rgba(255, 255, 255, 0)">41.99%</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+
+</body>
+</html>

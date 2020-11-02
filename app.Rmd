@@ -1,0 +1,193 @@
+---
+title: Presidential Election-night Forecasts
+date: "`r paste('UPDATED', as.character(Sys.time(), format='%B %e, %Y %I:%M %p %Z'))`"
+output:
+    html_document:
+        theme: readable
+        css: styles_app.css
+        fig.width: 9
+        fig.height: 6
+        self_contained: false
+        mathjax: null
+runtime: shiny
+---
+
+
+```{r include=F}
+library(tidyverse)
+library(formattable)
+library(shiny)
+library(r2d3)
+
+knitr::opts_chunk$set(echo=F, dev.args=list(bg="transparent"), fig.retina=2)
+options(r2d3.shadow=F)
+transp = theme(panel.background = element_rect(fill = "transparent", colour = NA),
+               plot.background = element_rect(fill = "transparent", colour = NA))
+
+states = suppressMessages(read_csv("data/state_ev.csv")) %>%
+    select(state, ev=ev.2020) %>%
+    left_join(suppressMessages(read_csv("data/state-data.csv")) %>%
+                  select(abbr, state),
+              by="state") %>%
+    arrange(abbr)
+states$state[8] = "D.C."
+state_ev = set_names(states$ev, states$abbr)
+state_names = set_names(states$state, states$abbr)
+ap_states = set_names(
+    c("Alaska","Ala.", "Ariz.","Ark.","Calif.","Colo.","Conn.","D.C.","Del.",
+      "Fla.","Ga.","Hawaii","Idaho","Ill.","Ind.","Iowa","Kan.","Ky.","La.",
+      "Mass.","Md.","Maine","Mich.","Minn.","Mo.","Miss.","Mont.","N.C.","N.D.",
+      "Neb.","N.H.","N.J.","N.M.","Nev.","N.Y.","Ohio","Okla.","Ore.","Pa.",
+      "R.I.","S.C.","S.D.","Tenn.","Texas","Utah","Va.","Vt.","Wash.","Wis.",
+      "W.Va.","Wyo."), 
+    states$abbr)
+
+dem_states = c("DC", "MA", "HI", "VT", "MD", "RI", "CA", "NY", "DE", "CT", 
+               "NJ", "WA", "OR", "IL", "CO")
+gop_states = c("WY", "WV", "ND", "ID", "OK", "AR", "UT", "AL", "TN", "KY", 
+               "SD", "MS")
+close_states = setdiff(states$abbr, c(dem_states, gop_states))
+
+gop_ev = sum(state_ev[gop_states], na.rm=T)
+dem_ev = sum(state_ev[dem_states], na.rm=T)
+
+source("R/forecast_update.R")
+draws = get_draws()
+base_pr = colMeans(select(draws$mine, -draw:-natl) > 0.5)
+st_min = apply(select(draws$mine, -draw:-natl), 2, min)
+st_max = apply(select(draws$mine, -draw:-natl), 2, max)
+```
+
+```{r}
+dr_keep = reactive({
+    req(input$model)
+    filter_ranges(draws[[str_to_lower(input$model)]], close_states, input) 
+}) 
+
+renderD3({
+    probs = colMeans(select(dr_keep(), -draw:-natl) > 0.5)
+    plot_d = states %>% 
+        mutate(prob = probs)
+    plot_d$state[plot_d$abbr == "DC"] = "District of Columbia"
+    
+    r2d3(plot_d, script="map.js", 
+         dependencies=c("usa.js", "https://d3js.org/topojson.v2.min.js"),
+         container="div", elementId="map")
+})
+
+renderUI({
+    dr = dr_keep();
+    probs = colMeans(select(dr, -draw:-natl) > 0.5)
+    ci = round(quantile(dr$ev, c(0.05, 0.95)))
+    pr_win = round(100*mean(dr$ev >= 270))
+    if (pr_win == "100" & sum(dr$ev < 270) > 0)
+        pr_win = ">99"
+    
+    div(
+        strong("Joe Biden", style="color: #56e"), "secures",
+        strong(sum(state_ev[probs >= 0.999])), "electoral votes, to",
+        strong("Donald Trump", style="color: #e65", .noWS="after"), "’s",
+        strong(sum(state_ev[probs <= 0.001])), "votes.",
+        strong("Biden", style="color: #56e"), "has a",
+        strong(pr_win, "in 100"),
+        "in chance of winning the election.",
+        "He is expected to win a total of ",
+        strong(ci[1], "–", ci[2]),
+        "electoral votes.",
+    class="banner")
+})
+
+renderPlot({
+    evs = dr_keep()$ev
+    colors = c("#ee6655", "#5566ee")[1 + (evs >= 270)]
+    ggplot(NULL, aes(x=evs, fill=colors)) + 
+        geom_histogram(binwidth=1) +
+        geom_vline(xintercept=270, lty="dashed") +
+        scale_fill_identity() +
+        guides(fill=F) +
+        coord_cartesian(expand=F, xlim=c(0.5*dem_ev, 538-0.5*gop_ev)) +
+        labs(y=NULL, x="Electoral votes for Biden") +
+        transp +
+        theme(panel.grid=element_blank(),
+              axis.line.x.bottom=element_line(),
+              axis.text.y=element_blank(),
+              axis.ticks.y=element_blank())
+}, height=220, bg="transparent", res=92)
+```
+
+
+# State Calls
+Use the sliders below to set Biden's share of the two-party vote in every state.
+
+The model starts with thousands of possible election scenarios, or "draws." The
+page will update depending on your selections by throwing away the draws that
+don't match what you've selected. You need at least 50 draws to have reliable
+estimates; the more the better.
+
+Right now you are using  __`r renderText(scales::comma(nrow(dr_keep())))` draws__.
+
+```{r}
+    selectInput("model", "Forecasting model", c("Mine", "Economist"), selectize=F)
+```
+
+### Lean Trump
+```{r}
+sl_gop = setdiff(states$abbr[base_pr < 0.3], gop_states)
+sl_gop = sl_gop[order(base_pr[sl_gop])]
+div(renderUI({
+    map(sl_gop, function(s) {
+        sliderInput(s, label=state_names[s], min=25, max=65,
+                    value=round(c(st_min[s]*97, st_max[s]*103), 1), step=0.1,
+                    ticks=F, width="15em", dragRange=F) 
+    })
+}), class="state_sliders gop")
+
+```
+
+### Tossups
+```{r}
+sl_toss = states$abbr[base_pr >= 0.3 & base_pr <= 0.7]
+sl_toss = sl_toss[order(base_pr[sl_toss])]
+div(renderUI({
+    map(sl_toss, function(s) {
+        sliderInput(s, label=state_names[s], min=30, max=70,
+                    value=round(c(st_min[s]*97, st_max[s]*103), 1), step=0.1,
+                    ticks=F, width="14em", dragRange=F) 
+    })
+}), class="state_sliders toss")
+
+```
+
+
+### Lean Biden
+```{r}
+sl_dem = setdiff(states$abbr[base_pr > 0.7], dem_states)
+sl_dem = sl_dem[order(base_pr[sl_dem])]
+div(renderUI({
+    map(sl_dem, function(s) {
+        sliderInput(s, label=state_names[s], min=35, max=75,
+                    value=round(c(st_min[s]*97, st_max[s]*103), 1), step=0.1,
+                    ticks=F, width="14em", dragRange=F) 
+    })
+}), class="state_sliders dem")
+
+```
+
+# State-by-State Odds
+```{r}
+renderFormattable({
+    probs = colMeans(select(dr_keep(), -draw:-natl) > 0.5)
+    called = abs(0.5-probs) >= 0.495
+    
+    states %>% 
+        select(State=state, EVs=ev) %>% 
+        filter(!called) %>%
+        mutate(`Biden's chances` = percent(probs[!called], 0),
+               `Trump's chances` = 1 - `Biden's chances`) %>%
+        arrange(`Trump's chances`) %>%
+    formattable(list(
+        `Biden's chances` = color_tile("#ffffff00", "#5566ee"),
+        `Trump's chances` = color_tile("#ffffff00", "#ee6655")
+    ))
+})
+```

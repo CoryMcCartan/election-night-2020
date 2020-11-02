@@ -1,0 +1,180 @@
+---
+title: Presidential Election-night Forecasts
+date: "`r paste('November 3, 2020,', as.character(Sys.time(), format='%I:%M %p %Z'))`"
+author: Cory McCartan
+output:
+    html_document:
+        theme: readable
+        css: styles.css
+        fig.width: 9
+        fig.height: 6
+        self_contained: false
+        mathjax: null
+---
+
+```{r include=F}
+library(usmap)
+library(ggplot2)
+library(formattable)
+
+knitr::opts_chunk$set(echo=F, dev.args=list(bg="transparent"), fig.retina=2)
+transp = theme(panel.background = element_rect(fill = "transparent", colour = NA),
+               plot.background = element_rect(fill = "transparent", colour = NA))
+```
+
+## National Overview
+```{r fig.width=9, fig.height=6}
+probs = calls
+state_names = set_names(states$state, states$abbr)
+pred_states = state_names[colnames(preds$states)]
+est_probs = apply(preds$states, 2, function(x) weighted.mean(x > 0.5, preds$w))
+probs[names(est_probs)] = est_probs
+
+us_map("states") %>%
+    mutate(prob = probs[abbr],
+           called = as.numeric(prob >= 0.999 | prob <= 0.001)) %>%
+ggplot(aes(x, y, group=group, fill=prob)) + 
+    geom_polygon(color=NA, size=0) + 
+    geom_polygon(aes(size=called, color=called), fill=NA) + 
+    scale_fill_gradient2(low="#ee6655", high="#5566ee", mid="#f0f0f0", 
+                         midpoint=0.5, limits=c(0, 1), na.value="#c0c0c0") +
+    scale_size_continuous(range=c(0.2, 0.65)) +
+    scale_color_gradient(low="#444444", high="#000000") +
+    guides(fill=F, color=F, size=F) +
+    coord_fixed() + 
+    theme_void() +
+    transp
+```
+
+```{r}
+dem_ev = sum(state_ev[calls==1], na.rm=T)
+gop_ev = sum(state_ev[calls==0], na.rm=T)
+distr_ev = dem_ev + as.numeric((preds$states[preds$rs,] > 0.5) %*% state_ev[colnames(preds$states)])
+```
+
+<div class="banner">
+<b style="color: #56e">Joe Biden</b> has won <b>`r dem_ev`</b> electoral votes, 
+to <b style="color: #e65">Donald Trump</b>'s <b>`r gop_ev`</b> votes. <br />
+<b style="color: #56e">Biden</b> has a <b>`r round(100*mean(distr_ev >= 270))` in 100</b>
+chance of winning the election.
+</div>
+
+```{r fig.width=9, fig.height=3}
+ev_hist = function(evs) {
+    ggplot(NULL, aes(x=evs, fill= evs>=270)) + 
+        geom_histogram(binwidth=1) +
+        geom_vline(xintercept=270, lty="dashed") +
+        scale_fill_manual(values=c("#ee6655", "#5566ee")) +
+        guides(fill=F) +
+        coord_cartesian(expand=F, xlim=c(0.5*dem_ev, 538-0.5*gop_ev)) +
+        labs(y=NULL, x="Electoral votes for Biden") +
+        transp +
+        theme(panel.grid=element_blank(),
+              axis.line.x.bottom=element_line(),
+              axis.text.y=element_blank(),
+              axis.ticks.y=element_blank())
+}
+
+ev_hist(distr_ev)
+```
+
+# Key States
+The remaining uncalled states:
+```{r}
+tibble(
+    State = pred_states,
+    `Estimated Biden vote` = percent(apply(preds$states, 2, function(x) weighted.mean(x, preds$w))),
+    `Chance Biden wins` = percent(est_probs, digits=0)
+) %>%
+    arrange(desc(`Chance Biden wins`)) %>%
+    formattable(list(
+        `Chance Biden wins` = color_tile(min.color="#ee6655cc", max.color="#5566eecc"),
+        `Estimated Biden vote` = normalize_bar("gray", min=0.4, max=0.6)
+        ))
+```
+
+The closest state:
+
+```{r fig.height=4, fig.width=8}
+idx_min = which.min((est_probs-0.5)^2)
+qplot(preds$states[,idx_min], bins=40,
+      main=pred_states[idx_min], xlab="Biden vote share") +
+    scale_x_continuous(labels=percent) +
+    geom_vline(xintercept=0.5, lty="dashed") +
+    coord_cartesian(expand=F) +
+    transp +
+    theme(panel.grid=element_blank(),
+          axis.line.x.bottom=element_line(),
+          axis.text.y=element_blank(),
+          axis.ticks.y=element_blank())
+```
+
+# Scenarios {.tabset}
+
+```{r}
+dem_called = as.character(na.omit(names(calls)[calls==1]))
+gop_called = as.character(na.omit(names(calls)[calls==0]))
+to_call = names(calls)[is.na(calls)]
+
+filtered = filter_wins(draws, dem_called, gop_called)
+
+hypotheticals = map_dfr(to_call, function(s) {
+    if_dem = filter_wins(filtered, dem_win=s, gop_win=gop_called) %>% 
+        imap_dfr(~ tibble(State=state_names[s], EVs=state_ev[s], 
+                          win="If Biden wins", forecast=.y, 
+                          n=nrow(.x), prob=mean(.x$ev >= 270)))
+    if_gop = filter_wins(filtered, dem_win=dem_called, gop_win=s) %>% 
+        imap_dfr(~ tibble(State=state_names[s], EVs=state_ev[s],
+                          win="If Trump wins", forecast=.y, 
+                          n=nrow(.x), prob=mean(.x$ev >= 270)))
+    
+    bind_rows(if_dem, if_gop) %>%
+        mutate(prob = percent(prob))
+})
+
+hyp_table = function(cast) {
+    hypotheticals %>%
+        filter(n > 30, forecast==cast)  %>%
+        select(-n, -forecast) %>%
+        pivot_wider(names_from=win, values_from=prob) %>%
+        arrange(desc(abs(`If Biden wins` - `If Trump wins`))) %>%
+        select(State, EVs, `If Trump wins`, `If Biden wins`) %>%
+    formattable(list(
+        `If Biden wins` = color_tile("#ffffff00", "#5566ee"),
+        `If Trump wins` = color_tile("#ffffff00", "#ee6655")
+    ))
+}
+```
+
+## Main Forecast
+
+```{r fig.width=9, fig.height=3}
+ev_hist(filtered$mine$ev)
+```
+
+Based on the states that have been called, the main forecast estimates that
+<b style="color: #56e">Biden</b> has a <b>`r round(100*mean(filtered$mine$ev >= 270))` in 100</b>
+chance of winning the election.
+
+This table shows Biden's chances of winning the election if he or Trump wins
+specific remaining states.
+```{r}
+hyp_table("mine")
+```
+
+
+## _Economist_ Forecast
+
+```{r fig.width=9, fig.height=3}
+ev_hist(filtered$economist$ev)
+```
+
+Based on the states that have been called, the _Economist_ forecasts that
+<b style="color: #56e">Biden</b> has a <b>`r round(100*mean(filtered$economist$ev >= 270))` in 100</b>
+chance of winning the election.
+
+This table shows Biden's chances of winning the election if he or Trump wins
+specific remaining states.
+```{r}
+hyp_table("economist")
+```
