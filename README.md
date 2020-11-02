@@ -1,4 +1,4 @@
-## [Run your own conditional forecasts on election night &raquo;](https://corymccartan.github.io/2020/11/election-night)
+## [Run your own forecasts on election night, no code required &raquo;](https://corymccartan.github.io/2020/11/election-night)
 
 # Live Election-night Projections
 
