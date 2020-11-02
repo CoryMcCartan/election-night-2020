@@ -2,6 +2,7 @@ suppressMessages({
     library(dplyr)
     library(purrr)
     library(readr)
+    library(mvtnorm)
 })
 
 get_draws = function() {
@@ -15,6 +16,7 @@ get_draws = function() {
     )
 }
 
+# dem_win and gop_win each a list of state abbreviations
 filter_wins = function(draws, dem_win, gop_win) {
     map(draws, function(dr) {
         filter(dr, across(all_of(dem_win), ~ . > 0.5),
@@ -22,6 +24,7 @@ filter_wins = function(draws, dem_win, gop_win) {
     })
 }
 
+# input a list of 2-element vectors containing the ranges
 filter_ranges = function(draws, close_states, input) {
     if (is.null(draws) || !all(close_states %in% names(input)))
         return(draws)
@@ -32,4 +35,30 @@ filter_ranges = function(draws, close_states, input) {
             draws[,s] <= input[[s]][2]/100
     }
     draws[keep,]
+}
+
+# model_draws a matrix from get_draws
+# proj_draws a list with an entry for each state of a vector of two-way dem_pct predictions
+filter_is = function(model_draws, proj_draws) {
+    model_m = as.matrix(select(model_draws, -draw:-natl))
+    model_loc = colMeans(model_m)
+    model_cov = cov(model_m)
+    N = nrow(model_m)
+
+    st = names(proj_draws)
+    log_source = dmvnorm(model_m[,st], model_loc[st], model_cov[st, st], log=T)
+    log_tgt = imap(proj_draws, function(x, s) {
+        if (is.na(x)) return(rep(0, N))
+        dx = density(x, adjust=1.5)
+        coalesce(approxfun(dx$x, log(dx$y))(model_m[,s]), 0)
+    }) %>%
+        do.call(rbind, .) %>%
+        colSums
+    if (all(log_tgt == 0)) return(1:N)
+
+    lr = log_tgt - log_source
+    lr = pmin(lr, quantile(lr, 0.95))
+    wgt = exp(lr - max(lr))
+    rs = sample(N, replace=T, prob=wgt)
+    rs
 }

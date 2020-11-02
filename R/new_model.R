@@ -75,6 +75,7 @@ get_pred_data = function(county_d, returns, st, yr=2020) {
 # get posterior draws from conjugate linear model, using importance sampling to
 # apply priors
 bayes_draw = function(m, newdata=m$model, draws=5e3, priors=NULL, infl=1.5) {
+    if (draws==0) return(matrix(nrow=0, ncol=nrow(newdata)))
     idx = !is.na(coef(m))
     sigmas = sigma(m) / sqrt(rchisq(draws, df.residual(m)) / df.residual(m))
     beta_zs = sigmas * rmvnorm(draws, sigma=vcov(m)[idx, idx]/sigma(m)^2)
@@ -114,12 +115,7 @@ calc_priors = function(county_d, st, yr=2020, infl=5) {
 }
 
 
-
-
-returns = pull_returns.wapo()
-county_d = get_county_data()
-
-predict_state = function(returns, county_d, st, yr=2020) {
+predict_state = function(returns, county_d, st, yr=2020, draws=2000) {
     priors = calc_priors(county_d, st, yr, infl=10)
     d_fit = get_fit_data(county_d, returns, st, yr)
     d_pred = get_pred_data(county_d, returns, st, yr)
@@ -136,8 +132,12 @@ predict_state = function(returns, county_d, st, yr=2020) {
     model_wgt = -0.5*c(AIC(m_basic), AIC(m_full))
     model_wgt = model_wgt - max(model_wgt)
     model_wgt = exp(model_wgt) / sum(exp(model_wgt))
+    if (is.nan(model_wgt[1])) model_wgt = c(1, 0)
     dr = 1 + round((draws-2)*model_wgt[1])
     dr = c(dr, draws - dr)
+
+    if (df.residual(m_basic) == 0) return(NA)
+    if (df.residual(m_full) == 0) dr = c(draws, 0)
 
     pred_vote = plogis(rbind(
         bayes_draw(m_basic, d_pred, priors=priors$basic, draws=dr[1]),

@@ -15,24 +15,19 @@ suppressMessages({
     library(readr)
     library(stringr)
     library(jsonlite)
-    library(lubridate)
     library(furrr)
-    library(xml2)
+    library(cli)
 })
 
 plan(multicore, workers=3)
 
-usa = tibble(state = c("Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut","Delaware","District of Columbia","Florida","Georgia",
-                       "Hawaii","Idaho","Illinois","Indiana","Iowa","Kansas", "Kentucky","Louisiana","Maine","Maryland", "Massachusetts","Michigan","Minnesota","Mississippi","Missouri",
-                       "Montana","Nebraska","Nevada","New Hampshire", "New Jersey","New Mexico","New York","North Carolina", "North Dakota","Ohio","Oklahoma","Oregon","Pennsylvania",
-                       "Rhode Island","South Carolina","South Dakota", "Tennessee","Texas","Utah","Vermont","Virginia", "Washington","West Virginia","Wisconsin","Wyoming"),
-             abbr = c("AL","AK","AZ","AR","CA", "CO","CT","DE","DC","FL","GA","HI","ID","IL","IN", "IA","KS","KY","LA","ME","MD","MA","MI","MN",
+usa = tibble(abbr = c("AL","AK","AZ","AR","CA", "CO","CT","DE","DC","FL","GA","HI","ID","IL","IN", "IA","KS","KY","LA","ME","MD","MA","MI","MN",
                       "MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC", "ND","OH","OK","OR","PA","RI","SC","SD","TN", "TX","UT","VT","VA","WA","WV","WI","WY"),
              fips = c("01","02","04","05","06", "08","09","10","11","12","13","15","16","17","18", "19","20","21","22","23","24","25","26","27",
                       "28","29","30","31","32","33","34","35","36","37", "38","39","40","41","42","44","45","46","47", "48","49","50","51","53","54","55","56"))
 
-pull_returns = function(states=c("VA", "FL", "IN", "NC", "GA", "ME", "IA",
-                                 "NH", "MI", "WI", "MN", "SC", "AZ")) {
+pull_returns = function(states=c("VA", "FL", "IN", "NC", "GA", "ME", "IA", "MT",
+                                 "NH", "MI", "WI", "MN", "SC", "AZ", "TX")) {
     fns = list(
         VA = pull_returns.VA,
         FL = pull_returns.FL,
@@ -43,7 +38,7 @@ pull_returns = function(states=c("VA", "FL", "IN", "NC", "GA", "ME", "IA",
     fns = append(fns, map(setdiff(states, custom_scrapers),
                           ~ function() { pull_returns.politico(.) }))
 
-    future_map_dfr(fns, ~ .())
+    future_map_dfr(fns, ~ .(), .options=furrr_options(seed=T))
 }
 
 pull_returns.wapo = function() {
@@ -70,6 +65,7 @@ pull_returns.wapo = function() {
 }
 
 pull_returns.politico = function(abbr) {
+    cli_alert_info("Getting Politico results for {abbr}")
     fips = usa$fips[usa$abbr == abbr]
     url_meta = str_glue("https://www.politico.com/2020-election/data/general-election-results/metadata/{fips}/potus.meta.json")
     url_votes = str_glue("https://www.politico.com/2020-election/data/general-election-results/live-results/{fips}/potus-counties.json")
@@ -77,12 +73,13 @@ pull_returns.politico = function(abbr) {
     raw_meta = read_json(url_meta, simplifyVector=T)
     raw_votes = read_json(url_votes, simplifyVector=F)
     cands = raw_meta$candidates
-    if (is.list(cands)) cands = cands[[1]]
+    if (is.list(cands) && !is.data.frame(cands)) cands = cands[[1]]
     dem_id = cands$candidateID[cands$party == "dem"]
     gop_id = cands$candidateID[cands$party == "gop"]
 
     to_tbl = function(cty) {
-        tibble(fips = as.integer(cty$countyFips),
+        tibble(abbr = abbr,
+               fips = as.integer(cty$countyFips),
                rep = cty$progressReporting,
                precincts = cty$progressTotal,
                dem = keep(cty$candidates, ~ .$candidateID == dem_id)[[1]]$vote,
@@ -96,6 +93,7 @@ pull_returns.politico = function(abbr) {
 }
 
 pull_returns.politico_sen = function(abbr) {
+    cli_alert_info("Getting Politico results for the {abbr} Senate race")
     fips = usa$fips[usa$abbr == str_sub(abbr, 1, 2)]
     url_meta = str_glue("https://www.politico.com/2020-election/data/general-election-results/metadata/{fips}/sen.meta.json")
     url_votes = str_glue("https://www.politico.com/2020-election/data/general-election-results/live-results/{fips}/sen-counties.json")
@@ -112,7 +110,8 @@ pull_returns.politico_sen = function(abbr) {
     gop_id = cands$candidateID[cands$party == "gop"]
 
     to_tbl = function(cty) {
-        tibble(fips = as.integer(cty$countyFips),
+        tibble(abbr = abbr,
+               fips = as.integer(cty$countyFips),
                rep = cty$progressReporting,
                precincts = cty$progressTotal,
                dem = keep(cty$candidates, ~ .$candidateID == dem_id)[[1]]$vote,
@@ -126,11 +125,13 @@ pull_returns.politico_sen = function(abbr) {
 }
 
 pull_returns.VA = function() {
+    cli_alert_info("Getting Virginia results.")
     url = "https://results.elections.virginia.gov/vaelections/2020%20November%20General/Json/President_and_Vice_President.json"
     raw = read_json(url, simplifyVector=F)
 
     to_tbl = function(cty) {
-        tibble(fips = 51e3 + as.integer(cty$Locality$LocalityCode),
+        tibble(abbr = "VA",
+               fips = 51e3 + as.integer(cty$Locality$LocalityCode),
                rep = cty$PrecinctsReporting,
                precincts = cty$PrecinctsParticipating,
                dem = keep(cty$Candidates, ~ .$PoliticalParty == "Democratic")[[1]]$Votes,
@@ -144,6 +145,7 @@ pull_returns.VA = function() {
 }
 
 pull_returns.FL = function() {
+    cli_alert_info("Getting Florida results.")
     url = "https://flelectionfiles.floridados.gov/enightfilespublic/20201103_ElecResultsFL.txt"
     raw = read_tsv(url, col_types="cccccccddddcccd")
 
@@ -179,12 +181,13 @@ pull_returns.FL = function() {
         filter(party %in% c("DEM", "REP")) %>%
         mutate(party = if_else(party=="DEM", "dem", "gop")) %>%
         pivot_wider(names_from=party, values_from=votes) %>%
-        mutate(twop = dem+gop) %>%
+        mutate(twop = dem+gop, abbr="FL") %>%
         left_join(counties, by="county") %>%
-        select(fips, rep, precincts, dem, gop, twop, total)
+        select(abbr, fips, rep, precincts, dem, gop, twop, total)
 }
 
 pull_returns.IN = function() {
+    cli_alert_info("Getting Indiana results.")
     url = "https://enr.indianavoters.in.gov/site/data/OffCatC_1019_A.json"
     raw = read_json(url)
 
@@ -211,7 +214,8 @@ pull_returns.IN = function() {
 
     to_tbl = function(cty) {
         cands = cty$Races$Race$Candidates$Candidate
-        tibble(fips = as.integer(cty$MAP_FIPS),
+        tibble(abbr = "IN",
+               fips = as.integer(cty$MAP_FIPS),
                rep = NA,
                precincts = precincts[as.character(fips)],
                dem = keep(cands, ~ .$POLITICALPARTYID == "1010")[[1]]$TOTAL,
@@ -226,9 +230,10 @@ pull_returns.IN = function() {
 
 # CHECK ON E-DAY
 pull_returns.NC = function() {
+    cli_alert_info("Getting North Carolina results.")
     url = "http://dl.ncsbe.gov/ENRS/2020_11_03/results_pct_20201103.zip"
     temp = tempfile()
-    download.file(url, temp)
+    download.file(url, temp, quiet=T)
     raw = read_tsv(unz(temp, "results_pct_20201103.txt"),
                    col_types="ccciccccddddddc")
     unlink(temp)
@@ -277,9 +282,9 @@ pull_returns.NC = function() {
         filter(party %in% c("DEM", "REP")) %>%
         mutate(party = if_else(party=="DEM", "dem", "gop")) %>%
         pivot_wider(names_from=party, values_from=votes) %>%
-        mutate(twop = dem + gop) %>%
+        mutate(twop = dem + gop, abbr="NC") %>%
         left_join(counties, by="county") %>%
-        select(fips, rep, precincts, dem, gop, twop, total)
+        select(abbr, fips, rep, precincts, dem, gop, twop, total)
 }
 
 # not working
@@ -346,4 +351,10 @@ pull_returns.TX = function() {
                           "sec-fetch-dest"="empty",
                           "cookie"="__cfduid=da633f56df5db9dda6c939aad4b51efcf1604113553; __cflb=0H28vXUGMBPc1d121iUdKmJCgpSmrjSRSFhRUvGrabv"
                       ))
+}
+
+if (!interactive()) {
+    ret = pull_returns()
+    dir.create("data/pulled", showWarnings = FALSE)
+    write_rds(ret, "data/pulled/returns.rdata")
 }

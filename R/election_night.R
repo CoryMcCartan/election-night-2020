@@ -5,9 +5,10 @@
 # CORY McCARTAN
 #######################################
 
-# Initial called states
-dem_states = "DC MA HI VT MD RI CA NY DE CT NJ WA OR IL CO"
-gop_states = "WY WV ND ID OK AR UT AL TN KY SD MS"
+calls = list(
+    dem = c("DC", "MA", "HI", "VT", "MD", "RI", "CA", "NY", "DE", "CT", "NJ", "WA", "OR", "IL", "CO"),
+    gop = c("WY", "WV", "ND", "ID", "OK", "AR", "UT", "AL", "TN", "KY", "SD", "MS")
+)
 
 #######################################
 # SETUP
@@ -20,79 +21,83 @@ source("R/forecast_update.R")
 rule(center="ELECTION NIGHT FORECASTS", line=2, width=60)
 
 cli_h1("Setting up")
-counties = suppressMessages(get_county_data())
+county_d = suppressMessages(get_county_data())
 cli_alert_success("Loaded county data.")
 
 draws = suppressMessages(get_draws())
-draws_m = select(draws$mine, -draw, -ev, -natl) %>% as.matrix
 cli_alert_success("Loaded pre-election forecast draws.")
 
-prev_prior = calc_prev_prior(counties, 2012, infl=10)
-cli_alert_success("Calculated prior from last election's results.")
-
-states = suppressMessages(read_csv("data/state_ev.csv")) %>%
+usa = suppressMessages(read_csv("data/state_ev.csv")) %>%
     select(state, ev=ev.2020) %>%
     left_join(suppressMessages(read_csv("data/state-data.csv")) %>%
                   select(abbr, state),
               by="state") %>%
     arrange(abbr)
-state_ev = set_names(states$ev, states$abbr)
+usa$state[8] = "D.C."
+state_ev = set_names(usa$ev, usa$abbr)
+state_names = set_names(usa$state, usa$abbr)
 cli_alert_success("Loaded state EV data.")
-
-calls = rep(NA, 51) %>% set_names(states$abbr)
-calls[str_split(dem_states, " ")[[1]]] = 1
-calls[str_split(gop_states, " ")[[1]]] = 0
-cli_alert_info("Safe races called:")
-cli_alert("DEM: {str_split(dem_states, ' ')[[1]]}")
-cli_alert("GOP: {str_split(gop_states, ' ')[[1]]}")
 
 
 #######################################
 # FORECAST LOOP
 #######################################
-run_forecast = function(state_calls, fr=0.1, samples=1000) {
+run_forecast = function(pull=F, samples=2000) {
     cli_h1("Running forecast: {as.character(Sys.time(), format='%I:%M %p %Z')}")
 
-    focus_states = names(state_calls)[is.na(state_calls)]
+    if (pull) {
+        system2("Rscript R/pull_returns.R")
+        cli_alert_success("Pulled election returns.")
+    }
+
+    returns = read_rds("data/pulled/returns.rdata")
+    rpt = with(returns, sum(rep, na.rm=T) / sum(precincts, na.rm=T))
+    cli_alert_info("{scales::percent(rpt)} of precincts reporting.")
+    focus_states = sort(unique(returns$abbr))
     cli_h2("States forecasting")
     cli_alert("{focus_states}")
 
-    returns = pull_returns(fr)
-    cli_alert_success("Pulled election returns.")
-    cli_alert_info("{scales::percent(with(returns, sum(rep) / sum(precincts)))} of precincts reporting.")
+    proj_draws = map(focus_states, function(s) {
+        cli_alert_info("Fitting model to {s} returns.")
+        predict_state(returns, county_d, s, 2020, samples)
+    }) %>%
+        set_names(focus_states)
+    cli_alert_success("Models fit successfully.")
 
-    fit_d = get_fit_data(counties, returns, focus_states, 2016)
-    pred_d = get_pred_data(counties, returns, focus_states, 2016)
-    cli_alert_success("Merged returns with county data.")
-
-    cli_alert_info("Fitting model to returns and county data.")
-    model = fit_model(fit_d, prev_prior, samples=samples)
-    cli_alert_success("Model fit successfully.")
-
-    state_predict(model, draws_m, fit_d, pred_d)
+    list(
+        draws = proj_draws,
+        mine = filter_is(draws$mine, proj_draws),
+        economist = filter_is(draws$mine, proj_draws)
+    )
 }
 
-call_states = function(state_calls, preds, quiet=F) {
-    probs = apply(preds$states, 2, function(x) weighted.mean(x > 0.5, preds$w))
-    dem_calls = names(probs)[probs > 0.9995]
-    gop_calls = names(probs)[probs < 0.0005]
+call_states = function(calls, preds, quiet=F) {
+    prob_mine = colMeans(draws$mine[preds$mine, usa$abbr] > 0.5)
+    prob_econ = colMeans(draws$economist[preds$economist, usa$abbr] > 0.5)
 
-    if (length(dem_calls) + length(gop_calls) > 0) {
+
+    cur_calls = sum(map_dbl(calls, length))
+    dem_calls = union(usa$abbr[prob_mine > 0.995 & prob_econ > 0.995], calls$dem)
+    gop_calls = union(usa$abbr[prob_mine < 0.005 & prob_econ < 0.005], calls$gop)
+
+    if (length(dem_calls) + length(gop_calls) > cur_calls) {
         cli_h1("NEW RACE CALLS")
         if (!quiet) beepr::beep(3)
 
-        if (length(dem_calls) > 0)
-            cli_alert_info("{str_to_upper(states$state[states$abbr %in% dem_calls])} for Biden")
-        if (length(gop_calls) > 0)
-            cli_alert_info("{str_to_upper(states$state[states$abbr %in% gop_calls])} for Trump")
-
-        state_calls[dem_calls] = 1
-        state_calls[gop_calls] = 0
+        new_dem = setdiff(dem_calls, calls$dem)
+        new_gop = setdiff(gop_calls, calls$gop)
+        if (length(new_dem) > 0)
+            cli_alert_info("{str_to_upper(usa$state[usa$abbr %in% new-dem])} for Biden")
+        if (length(new_gop) > 0)
+            cli_alert_info("{str_to_upper(usa$state[usa$abbr %in% new_gop])} for Trump")
     }
 
-    state_calls
+    list(
+        dem = dem_calls,
+        gop = gop_calls
+    )
 }
 
-preds = run_forecast(calls, fr=0.25)
+preds = run_forecast()
 calls = call_states(calls, preds)
-rmarkdown::render("summary.Rmd", envir=globalenv())
+rmarkdown::render("viz/viz.Rmd", envir=globalenv(), params=list(model="mine"))
