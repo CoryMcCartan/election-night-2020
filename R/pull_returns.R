@@ -26,6 +26,7 @@ usa = tibble(abbr = c("AL","AK","AZ","AR","CA", "CO","CT","DE","DC","FL","GA","H
              fips = c("01","02","04","05","06", "08","09","10","11","12","13","15","16","17","18", "19","20","21","22","23","24","25","26","27",
                       "28","29","30","31","32","33","34","35","36","37", "38","39","40","41","42","44","45","46","47", "48","49","50","51","53","54","55","56"))
 
+
 pull_returns = function(states=c("VA", "FL", "IN", "NC", "GA", "ME", "IA", "MT",
                                  "NH", "MI", "WI", "MN", "SC", "AZ", "TX")) {
     fns = list(
@@ -38,6 +39,12 @@ pull_returns = function(states=c("VA", "FL", "IN", "NC", "GA", "ME", "IA", "MT",
     fns = append(fns, map(setdiff(states, custom_scrapers),
                           ~ function() { pull_returns.politico(.) }))
 
+    future_map_dfr(fns, ~ .(), .options=furrr_options(seed=T))
+}
+
+pull_returns_senate = function(states=c("GA", "GA-S", "ME", "IA", "AZ", "MI",
+                                        "CO", "NC", "SC", "MT")) {
+    fns = map(states, ~ function() { pull_returns.politico_sen(.) })
     future_map_dfr(fns, ~ .(), .options=furrr_options(seed=T))
 }
 
@@ -105,7 +112,7 @@ pull_returns.politico_sen = function(abbr) {
     raw_meta = read_json(url_meta, simplifyVector=T)
     raw_votes = read_json(url_votes, simplifyVector=F)
     cands = raw_meta$candidates
-    if (is.list(cands)) cands = cands[[1]]
+    if (is.list(cands) && !is.data.frame(cands)) cands = cands[[1]]
     dem_id = cands$candidateID[cands$party == "dem"]
     gop_id = cands$candidateID[cands$party == "gop"]
 
@@ -114,8 +121,8 @@ pull_returns.politico_sen = function(abbr) {
                fips = as.integer(cty$countyFips),
                rep = cty$progressReporting,
                precincts = cty$progressTotal,
-               dem = keep(cty$candidates, ~ .$candidateID == dem_id)[[1]]$vote,
-               gop = keep(cty$candidates, ~ .$candidateID == gop_id)[[1]]$vote,
+               dem = keep(cty$candidates, ~ .$candidateID %in% dem_id)[[1]]$vote,
+               gop = keep(cty$candidates, ~ .$candidateID %in% gop_id)[[1]]$vote,
                twop = dem+gop,
                total = sum(map_dbl(cty$candidates, ~ .$vote))
         )
@@ -354,7 +361,9 @@ pull_returns.TX = function() {
 }
 
 if (!interactive()) {
-    ret = pull_returns()
     dir.create("data/pulled", showWarnings = FALSE)
+    ret = pull_returns()
     write_rds(ret, "data/pulled/returns.rdata")
+    ret_s = pull_returns_senate()
+    write_rds(ret_s, "data/pulled/returns_senate.rdata")
 }

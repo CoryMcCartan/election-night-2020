@@ -1,5 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Overpass:wght@300;700&family=Playfair+Display:wght@400;800&display=swap');
 
+html {
+    overflow-x: hidden;
+}
+
 body {
     color: #000;
     font-family: Overpass, Arial, sans-serif;

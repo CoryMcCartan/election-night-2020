@@ -6,10 +6,11 @@ suppressMessages({
 })
 
 get_draws = function() {
-    tmp = tempfile()
-    download.file("https://cdn.economistdatateam.com/us-2020-forecast/data/president/economist_model_output.zip", tmp)
-    econ_d = read_csv(unz(tmp, "output/site_data//electoral_college_simulations.csv"))
-    unlink(tmp)
+    #tmp = tempfile()
+    #download.file("https://cdn.economistdatateam.com/us-2020-forecast/data/president/economist_model_output.zip", tmp)
+    #econ_d = read_csv(unz(tmp, "output/site_data//electoral_college_simulations.csv"))
+    #unlink(tmp)
+    econ_d = read_csv("https://cdn.economistdatateam.com/us-2020-forecast/data/president/electoral_college_simulations.csv")
     list(
         economist = rename(econ_d, ev=dem_ev, natl=natl_pop_vote),
         mine = read_csv("https://corymccartan.github.io/president/draws_mat.csv")

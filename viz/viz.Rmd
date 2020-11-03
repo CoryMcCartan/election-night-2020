@@ -3,6 +3,7 @@ title: Presidential Election-night Forecasts
 date: "`r paste('UPDATED', as.character(Sys.time(), format='%B %e, %Y %I:%M %p %Z'))`"
 output:
     html_document:
+        toc: true
         theme: readable
         css: ../styles_app.css
         fig.width: 9
@@ -14,12 +15,12 @@ params:
 ---
 
 ```{css echo=F}
-html {
-    overflow-x: hidden;
-}
 #map {
     max-width: 100% !important;
     margin: 0 !important;
+}
+h4.author, h1.title {
+    display: initial !important;
 }
 ```
 
@@ -48,13 +49,24 @@ ap_states = set_names(
 close_states = setdiff(usa$abbr, c(calls$dem, calls$gop))
 gop_ev = sum(state_ev[calls$dem], na.rm=T)
 dem_ev = sum(state_ev[calls$gop], na.rm=T)
+
+sen = usa
+ga_row = sen[sen$abbr=="GA",]
+ga_row$abbr = "GA-S"
+ga_row$state = "Georgia Special"
+sen = bind_rows(sen, ga_row) %>% 
+    arrange(abbr) %>%
+    filter(abbr %in% colnames(draws_s)[-1:-3]) %>%
+    select(-ev)
 ```
 
+
+# President
 ```{r}
 dr = draws[[params$model]][preds[[params$model]], ]
 
 probs = colMeans(select(dr, -draw:-natl) > 0.5)
-plot_d = states %>% 
+plot_d = usa %>% 
     mutate(prob = probs)
 plot_d$state[plot_d$abbr == "DC"] = "District of Columbia"
 
@@ -101,7 +113,7 @@ ggplot(NULL, aes(x=dr$ev, fill=colors)) +
 
 ```{r fig.width=9, fig.height=2.5}
 colors = c("#ee6655", "#5566ee")[1 + (dr$natl >= 0.5)]
-ggplot(NULL, aes(x=dr$natl, fill=colors, group=1)) + 
+ggplot(NULL, aes(x=dr$natl, fill=colors)) + 
     geom_histogram(binwidth=0.002) +
     geom_vline(xintercept=0.5, lty="dashed") +
     scale_fill_identity() +
@@ -116,7 +128,7 @@ ggplot(NULL, aes(x=dr$natl, fill=colors, group=1)) +
 ```
 
 
-# State-by-State Odds
+## State-by-State Odds
 ```{r}
 called = abs(0.5-probs) >= 0.495
 bounds = apply(select(dr, -draw:-natl), 2, function(x) {
@@ -124,7 +136,7 @@ bounds = apply(select(dr, -draw:-natl), 2, function(x) {
     str_glue("{digits(100*b[1], 1)} – {percent(b[2], 1)}")
 })
 rpt = group_by(returns, abbr) %>% 
-  summarize(rpt = sum(rep, na.rm=T)/sum(precincts))
+    summarize(rpt = sum(rep, na.rm=T)/sum(precincts))
     
 usa %>% 
     left_join(rpt, by="abbr") %>%
@@ -142,18 +154,20 @@ formattable(list(
 ))
 ```
 
-# Closest States
-```{r fig.width=10, fig.height=5}
+## Closest States
+```{r fig.width=10, fig.height=5, results="asis"}
 closest = sort(abs(0.5 - probs[names(preds$draws)])) %>% names %>% head(10)
 
 for (s in closest) {
     dem_pct = preds$draws[[s]]
     if (is.na(dem_pct[1])) dem_pct = dr[[s]]
     
-    p1 = ggplot(NULL, aes(dem_pct)) + 
+    colors = c("#ee6655", "#5566ee")[1 + (dem_pct > 0.5)]
+    p1 = ggplot(NULL, aes(dem_pct, fill=colors)) + 
         geom_histogram(binwidth=0.01) +
         geom_vline(xintercept=0.5, lty="dashed") +
         coord_cartesian(expand=F, xlim=c(0.35, 0.65)) +
+        scale_fill_identity() +
         labs(y=NULL, x="Popular vote for Biden", title=state_names[s]) +
         transp +
         theme(panel.grid=element_blank(),
@@ -174,5 +188,96 @@ for (s in closest) {
              color="Pct. college", size="Two-party-vote") +
         transp
     gridExtra::grid.arrange(p1, p2, nrow=1)
+    cat("  \n")
+    cat("  \n")
 }
 ```
+
+
+# Senate
+```{r fig.width=9, fig.height=2.5}
+dr_s = draws_s[preds_senate$idx,][preds_senate$mine,]
+
+colors = c("#ee6655", "#5566ee")[1 + (dr_s$seats >= 50)]
+ggplot(NULL, aes(x=dr_s$seats, fill=colors)) + 
+    geom_histogram(breaks=seq(40.25, 59.75, 0.5)) +
+    geom_vline(xintercept=50, lty="dashed") +
+    scale_fill_identity() +
+    guides(fill=F) +
+    coord_cartesian(expand=F, xlim=c(40, 60)) +
+    labs(y=NULL, x="Democratic seats") +
+    transp +
+    theme(panel.grid=element_blank(),
+          axis.line.x.bottom=element_line(),
+          axis.text.y=element_blank(),
+          axis.ticks.y=element_blank())
+```
+
+## Race Odds
+```{r}
+probs_s = colMeans(select(dr_s, -draw:-natl) > 0.5)
+called = abs(0.5-probs_s) >= 0.495
+bounds = apply(select(dr_s, -draw:-natl), 2, function(x) {
+    b = quantile(x, c(0.005, 0.995))
+    str_glue("{digits(100*b[1], 1)} – {percent(b[2], 1)}")
+})
+rpt = group_by(returns_sen, abbr) %>% 
+    summarize(rpt = sum(rep, na.rm=T)/sum(precincts))
+    
+sen %>% 
+    left_join(rpt, by="abbr") %>%
+    #filter(abbr %in% names(called)[!called]) %>%
+    filter(!called) %>%
+    select(Race=state, `% Rpt.`=rpt) %>% 
+    mutate(`% Rpt.` = percent(`% Rpt.`, 0),
+           `DEM chances` = percent(probs_s[!called], 0),
+           `GOP chances` = 1 - `DEM chances`,
+           `DEM vote share` = bounds[!called]) %>%
+    arrange(`GOP chances`) %>%
+formattable(list(
+    `% Rpt.` = color_tile("#ffffff00", "#00000077"),
+    `DEM chances` = color_tile("#ffffff00", "#5566ee"),
+    `GOP chances` = color_tile("#ffffff00", "#ee6655")
+))
+```
+
+## Closest Races
+```{r fig.width=10, fig.height=5, results="asis"}
+closest = sort(abs(0.5 - probs_s[names(preds_senate$draws)])) %>% names %>% head(8)
+
+for (s in closest) {
+    dem_pct = preds_senate$draws[[s]]
+    if (is.na(dem_pct[1])) dem_pct = dr_s[[s]]
+    
+    colors = c("#ee6655", "#5566ee")[1 + (dem_pct > 0.5)]
+    p1 = ggplot(NULL, aes(dem_pct)) + 
+        geom_histogram(binwidth=0.01) +
+        geom_vline(xintercept=0.5, lty="dashed") +
+        coord_cartesian(expand=F, xlim=c(0.3, 0.7)) +
+        scale_fill_identity() +
+        labs(y=NULL, x="Democratic vote", title=sen$state[sen$abbr == s]) +
+        transp +
+        theme(panel.grid=element_blank(),
+              axis.line.x.bottom=element_line(),
+              axis.text.y=element_blank(),
+              axis.ticks.y=element_blank())
+    p2 = get_fit_data(county_d, returns, s, 2020) %>%
+    ggplot(aes(plogis(last_lgdem), dem/twop, size=twop, color=1-lesscollege_pct)) +
+        geom_abline(slope=1) +
+        geom_point(alpha=0.85) +
+        geom_smooth(method=lm, formula=y~x, se=F, color="black", size=1.5) +
+        scale_x_continuous(labels=scales::percent) +
+        scale_y_continuous(labels=scales::percent) +
+        scale_color_continuous(labels=scales::percent) +
+        scale_size_continuous(labels=scales::comma) +
+        labs(x="Last election", y="This election", 
+             title=str_c(state_names[str_sub(s, 1, 2)], " counties"),
+             color="Pct. college", size="Two-party-vote") +
+        transp
+    gridExtra::grid.arrange(p1, p2, nrow=1)
+    cat("  \n")
+    cat("  \n")
+}
+```
+
+

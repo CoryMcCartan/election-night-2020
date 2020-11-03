@@ -13,6 +13,7 @@ This repository contains a series of tools and visualizations for election night
 * `R/pull_returns.R`: scrapers to get the election returns from state websites &
   news outlets.
 * `R/forecast_update.R`: loads and filters model posterior draws.
+* `R/forecast_update_senate.R`: loads and filters model posterior draws for the Senate.
 * `data/`: county presidential returns 2000-16, senate returns 2012-16, and
   2016 county demographics.  State EV data.
 * `app.Rmd`: a Shiny app to do conditional forecasts, using posterior draws from

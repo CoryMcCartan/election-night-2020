@@ -93,7 +93,9 @@ renderUI({
         "in chance of winning the election.",
         "He is expected to win a total of ",
         strong(ci[1], "–", ci[2]),
-        "electoral votes.",
+        "electoral votes and",
+        strong(percent(median(dr$natl), 1)),
+        "of the popular vote.",
     class="banner")
 })
 
@@ -107,6 +109,24 @@ renderPlot({
         guides(fill=F) +
         coord_cartesian(expand=F, xlim=c(0.5*dem_ev, 538-0.5*gop_ev)) +
         labs(y=NULL, x="Electoral votes for Biden") +
+        transp +
+        theme(panel.grid=element_blank(),
+              axis.line.x.bottom=element_line(),
+              axis.text.y=element_blank(),
+              axis.ticks.y=element_blank())
+}, height=220, bg="transparent", res=92)
+
+renderPlot({
+    natl = dr_keep()$natl
+    colors = c("#ee6655", "#5566ee")[1 + (natl >= 0.5)]
+    ggplot(NULL, aes(x=natl, fill=colors)) + 
+        geom_histogram(binwidth=0.002) +
+        geom_vline(xintercept=0.5, lty="dashed") +
+        scale_fill_identity() +
+        guides(fill=F) +
+        scale_x_continuous(labels=scales::percent) +
+        coord_cartesian(expand=F, xlim=c(0.4, 0.65)) +
+        labs(y=NULL, x="Popular vote for Biden") +
         transp +
         theme(panel.grid=element_blank(),
               axis.line.x.bottom=element_line(),
@@ -136,9 +156,9 @@ sl_gop = setdiff(states$abbr[base_pr < 0.3], gop_states)
 sl_gop = sl_gop[order(base_pr[sl_gop])]
 div(renderUI({
     map(sl_gop, function(s) {
-        sliderInput(s, label=state_names[s], min=25, max=65,
-                    value=round(c(st_min[s]*97, st_max[s]*103), 1), step=0.1,
-                    ticks=F, width="15em", dragRange=F) 
+        sliderInput(s, label=state_names[s], min=30, max=62,
+                    value=round(c(st_min[s]*96, st_max[s]*104), 1), step=0.05,
+                    round=T, ticks=F, width="15em", dragRange=F) 
     })
 }), class="state_sliders gop")
 
@@ -150,9 +170,9 @@ sl_toss = states$abbr[base_pr >= 0.3 & base_pr <= 0.7]
 sl_toss = sl_toss[order(base_pr[sl_toss])]
 div(renderUI({
     map(sl_toss, function(s) {
-        sliderInput(s, label=state_names[s], min=30, max=70,
-                    value=round(c(st_min[s]*97, st_max[s]*103), 1), step=0.1,
-                    ticks=F, width="14em", dragRange=F) 
+        sliderInput(s, label=state_names[s], min=35, max=65,
+                    value=round(c(st_min[s]*96, st_max[s]*104), 1), step=0.05,
+                    round=T, ticks=F, width="15em", dragRange=F) 
     })
 }), class="state_sliders toss")
 
@@ -165,9 +185,9 @@ sl_dem = setdiff(states$abbr[base_pr > 0.7], dem_states)
 sl_dem = sl_dem[order(base_pr[sl_dem])]
 div(renderUI({
     map(sl_dem, function(s) {
-        sliderInput(s, label=state_names[s], min=35, max=75,
-                    value=round(c(st_min[s]*97, st_max[s]*103), 1), step=0.1,
-                    ticks=F, width="14em", dragRange=F) 
+        sliderInput(s, label=state_names[s], min=38, max=70,
+                    value=round(c(st_min[s]*96, st_max[s]*104), 1), step=0.05,
+                    round=T, ticks=F, width="15em", dragRange=F) 
     })
 }), class="state_sliders dem")
 

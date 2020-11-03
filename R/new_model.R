@@ -60,7 +60,7 @@ get_fit_data = function(county_d, returns, st, yr=2020) {
         select(-total, -dem, -gop, -twop) %>%
         inner_join(full_d, by="fips") %>%
         mutate(lg_dem = qlogis(dem / twop)) %>%
-        drop_na(any_of(as.character(attr(terms(model_formula), "variables"))))
+        drop_na(any_of(as.character(attr(terms(full_formula), "variables"))))
 }
 
 # Get data to predict using model
@@ -146,4 +146,11 @@ predict_state = function(returns, county_d, st, yr=2020, draws=2000) {
         (rowSums(pred_turn) + sum(d_fit$twop))
 
     dem_pct
+}
+
+gen_d = suppressMessages(read_csv("data/generic_pres.csv"))
+m_gen = lm(generic ~ president, data=gen_d)
+predict_sen = function(natl) {
+    bayes_draw(m_gen, newdata=tibble(president=natl[1:100], generic=0), draws=25) %>%
+        as.numeric
 }
